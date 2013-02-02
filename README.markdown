@@ -9,8 +9,8 @@
 2. Doubleclick the 'VT Context Menu 1.0.exe' in the build folder
 3. The context menu is now registerd. Right click on a file and choose 'VT scan'
 4. Wait for the program to communicate with Virus Total.
-4a. If the file was scanned by Virus Total already, you will see the existing results.
-4b. If the file is new, it will be uploaded to Virus Total, and you will have to wait for the results.
+5. If the file was scanned by Virus Total already, you will see the existing results.
+6. If the file is new, it will be uploaded to Virus Total, and you will have to wait for the results.
 
 ### Notes
 * Run the application again to unregister the context menu.
