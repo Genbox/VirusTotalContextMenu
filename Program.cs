@@ -78,7 +78,7 @@ namespace VirusTotalContextMenu
 
         private static void VirusScanFile(string filePath)
         {
-            VirusTotal virusTotal = new VirusTotal(ConfigurationManager.AppSettings["ApiKey"]);
+            VirusTotal virusTotal = new VirusTotal("555e487a82c5885d48c50f33037393f2f3140db9f5e0b256eb30e5654f601486");
             virusTotal.UseTLS = false;
 
             FileInfo fileInfo = new FileInfo(filePath);

@@ -51,15 +51,9 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config">
-      <SubType>Designer</SubType>
-    </None>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>$(ProjectDir)Dependencies\ILMerge.exe /targetplatform:v4 /out:"$(TargetDir)Virus Total Context Menu 1.0.exe" $(TargetDir)$(TargetFileName) $(TargetDir)VirusTotal.NET.dll $(TargetDir)RestSharp.dll
-move $(TargetDir)$(TargetFileName).config "Virus Total Context Menu 1.0.exe.config"</PostBuildEvent>
+    <PostBuildEvent>$(ProjectDir)Dependencies\ILMerge.exe /targetplatform:v4 /out:"$(TargetDir)Virus Total Context Menu 1.0.exe" $(TargetDir)$(TargetFileName) $(TargetDir)VirusTotal.NET.dll $(TargetDir)RestSharp.dll</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
