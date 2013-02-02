@@ -30,9 +30,6 @@ namespace VirusTotalContextMenu
                 // invoked from shell, process the selected file
                 VirusScanFile(args[0]);
             }
-
-            Console.WriteLine("Press a key to continue.");
-            Console.ReadLine();
         }
 
         /// <summary>

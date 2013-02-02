@@ -52,7 +52,7 @@ namespace VirusTotalContextMenu
             string regPath = string.Format(@"{0}\shell\{1}", fileType, shellKeyName);
 
             // remove context menu from the registry
-            Registry.ClassesRoot.DeleteSubKeyTree(regPath);
+            Registry.ClassesRoot.DeleteSubKeyTree(regPath, false);
         }
     }
 }
