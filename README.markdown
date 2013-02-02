@@ -1,4 +1,4 @@
-# Virus Total Context Menu - Right click on a file to scan it using Virus Total
+# Virus Total Context Menu - Right click on a file to scan it.
 
 ### Features
 * Based on VirusTotal.NET (https://github.com/Genbox/VirusTotal.NET) to get reports and scanning the files.
