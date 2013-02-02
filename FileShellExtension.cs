@@ -11,6 +11,16 @@ namespace VirusTotalContextMenu
     /// </summary>
     static class FileShellExtension
     {
+        public static bool IsRegistered(string fileType, string shellKeyName)
+        {
+            string regPath = string.Format(@"{0}\shell\{1}", fileType, shellKeyName);
+
+            using (RegistryKey key = Registry.ClassesRoot.OpenSubKey(regPath))
+            {
+                return key != null;
+            }
+        }
+
         /// <summary>
         /// Register a simple shell context menu.
         /// </summary>

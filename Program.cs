@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -47,8 +46,11 @@ namespace VirusTotalContextMenu
         /// <returns>True if processed an action in the command line.</returns>
         static bool ProcessCommand(string[] args)
         {
+            if (args.Length == 0)
+                args = FileShellExtension.IsRegistered(FileType, KeyName) ? new[] { "--unregister" } : new[] { "--register" };
+
             // register
-            if (args.Length == 0 || string.Compare(args[0], "--register", true) == 0)
+            if (string.Compare(args[0], "--register", true) == 0)
             {
                 // full path to self, %L is placeholder for selected file
                 string menuCommand = string.Format("\"{0}\" \"%L\"", Application.ExecutablePath);
@@ -56,7 +58,7 @@ namespace VirusTotalContextMenu
                 // register the context menu
                 FileShellExtension.Register(FileType, KeyName, MenuText, menuCommand);
 
-                MessageBox.Show(string.Format("The {0} shell extension was registered.", KeyName), KeyName);
+                MessageBox.Show(string.Format("The {0} shell extension was registered.", KeyName), KeyName, MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 return true;
             }
@@ -67,7 +69,7 @@ namespace VirusTotalContextMenu
                 // unregister the context menu
                 FileShellExtension.Unregister(FileType, KeyName);
 
-                MessageBox.Show(string.Format("The {0} shell extension was unregistered.", KeyName), KeyName);
+                MessageBox.Show(string.Format("The {0} shell extension was unregistered.", KeyName), KeyName, MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 return true;
             }
