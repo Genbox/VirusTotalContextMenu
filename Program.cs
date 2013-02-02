@@ -24,11 +24,18 @@ namespace VirusTotalContextMenu
         [STAThread]
         static void Main(string[] args)
         {
-            // process register or unregister commands
-            if (!ProcessCommand(args))
+            try
             {
-                // invoked from shell, process the selected file
-                VirusScanFile(args[0]);
+                // process register or unregister commands
+                if (!ProcessCommand(args))
+                {
+                    // invoked from shell, process the selected file
+                    VirusScanFile(args[0]);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Exception caught", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
