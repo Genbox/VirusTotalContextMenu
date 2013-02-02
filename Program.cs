@@ -71,8 +71,6 @@ namespace VirusTotalContextMenu
         private static void VirusScanFile(string filePath)
         {
             VirusTotal virusTotal = new VirusTotal(ConfigurationManager.AppSettings["ApiKey"]);
-
-            //Use HTTPS instead of HTTP
             virusTotal.UseTLS = false;
 
             FileInfo fileInfo = new FileInfo(filePath);
@@ -81,18 +79,18 @@ namespace VirusTotalContextMenu
                 return;
 
             //Check if the file has been scanned before.
-            Console.WriteLine("Getting report for " + Path.GetFileName(filePath));
+            Debug.WriteLine("Getting report for " + Path.GetFileName(filePath));
             Report report = virusTotal.GetFileReport(HashHelper.GetSHA256(fileInfo)).FirstOrDefault();
 
             if (report == null || report.ResponseCode == 0)
             {
-                Console.WriteLine("No report for " + Path.GetFileName(filePath) + " - sending file to VT");
+                Debug.WriteLine("No report for " + Path.GetFileName(filePath) + " - sending file to VT");
 
                 try
                 {
                     ScanResult result = virusTotal.ScanFile(fileInfo);
 
-                    Console.WriteLine("Opening report for " + Path.GetFileName(filePath));
+                    Debug.WriteLine("Opening report for " + Path.GetFileName(filePath));
                     Process.Start(result.Permalink);
                 }
                 catch (RateLimitException)
@@ -106,7 +104,7 @@ namespace VirusTotalContextMenu
             }
             else
             {
-                Console.WriteLine("Opening report for " + Path.GetFileName(filePath));
+                Debug.WriteLine("Opening report for " + Path.GetFileName(filePath));
                 Process.Start(report.Permalink);
             }
         }
