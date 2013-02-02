@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using VirusTotalNET;
+using VirusTotalNET.Exceptions;
 using VirusTotalNET.Objects;
 
 [assembly: CLSCompliant(true)]
