@@ -58,7 +58,7 @@ namespace VirusTotalContextMenu
                 // register the context menu
                 FileShellExtension.Register(FileType, KeyName, MenuText, menuCommand);
 
-                MessageBox.Show(string.Format("The {0} shell extension was registered.", KeyName), KeyName, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(string.Format("The '{0}' shell extension was registered.", KeyName), KeyName, MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 return true;
             }
@@ -69,7 +69,7 @@ namespace VirusTotalContextMenu
                 // unregister the context menu
                 FileShellExtension.Unregister(FileType, KeyName);
 
-                MessageBox.Show(string.Format("The {0} shell extension was unregistered.", KeyName), KeyName, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(string.Format("The '{0}' shell extension was unregistered.", KeyName), KeyName, MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 return true;
             }
