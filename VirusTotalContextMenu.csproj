@@ -36,13 +36,19 @@
   <PropertyGroup>
     <StartupObject />
   </PropertyGroup>
+  <PropertyGroup />
   <ItemGroup>
+    <Reference Include="RestSharp, Version=104.4.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>packages\RestSharp.104.4.0\lib\net4-client\RestSharp.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="VirusTotal.NET, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+    <Reference Include="System.Xml" />
+    <Reference Include="VirusTotal.NET, Version=1.1.6.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>Dependencies\VirusTotal.NET.dll</HintPath>
+      <HintPath>packages\VirusTotal.NET.1.1.6\lib\VirusTotal.NET.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -50,12 +56,16 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>$(ProjectDir)Dependencies\ILMerge.exe /targetplatform:v4 /out:"$(TargetDir)VT Context Menu 1.0.exe" $(TargetDir)$(TargetFileName) $(TargetDir)VirusTotal.NET.dll $(TargetDir)RestSharp.dll
-del  $(TargetDir)$(TargetFileName)
-del $(TargetDir)VirusTotal.NET.dll
-del $(TargetDir)RestSharp.dll</PostBuildEvent>
+    <PostBuildEvent>"$(ProjectDir)packages\ilmerge.2.13.0307\ILMerge.exe" /targetplatform:v4 /out:"$(TargetDir)VT Context Menu 1.0.exe" "$(TargetDir)$(TargetFileName)" "$(TargetDir)VirusTotal.NET.dll" "$(TargetDir)RestSharp.dll"
+del " $(TargetDir)$(TargetFileName)"
+del "$(TargetDir)VirusTotal.NET.dll"
+del "$(TargetDir)RestSharp.dll"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

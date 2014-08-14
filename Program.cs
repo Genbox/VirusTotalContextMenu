@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
+using System.Reflection;
+using System.Security.Principal;
 using System.Windows.Forms;
 using VirusTotalNET;
 using VirusTotalNET.Exceptions;
@@ -52,6 +53,8 @@ namespace VirusTotalContextMenu
             // register
             if (string.Compare(args[0], "--register", true) == 0)
             {
+                RestartBinaryAsAdminIfRequired(args);
+
                 // full path to self, %L is placeholder for selected file
                 string menuCommand = string.Format("\"{0}\" \"%L\"", Application.ExecutablePath);
 
@@ -66,6 +69,8 @@ namespace VirusTotalContextMenu
             // unregister
             if (string.Compare(args[0], "--unregister", true) == 0)
             {
+                RestartBinaryAsAdminIfRequired(args);
+
                 // unregister the context menu
                 FileShellExtension.Unregister(FileType, KeyName);
 
@@ -78,10 +83,37 @@ namespace VirusTotalContextMenu
             return false;
         }
 
+        private static void RestartBinaryAsAdminIfRequired(string[] args)
+        {
+            if (!IsUserAdmin())
+            {
+                Process p = new Process();
+                p.StartInfo.FileName = Assembly.GetEntryAssembly().Location;
+                p.StartInfo.Arguments = string.Join(" ", args);
+                p.StartInfo.Verb = "runAs";
+                p.Start();
+
+                Environment.Exit(0);
+            }
+        }
+
+        private static bool IsUserAdmin()
+        {
+            WindowsIdentity currentUser = WindowsIdentity.GetCurrent();
+
+            if (currentUser != null)
+            {
+                WindowsPrincipal principal = new WindowsPrincipal(currentUser);
+                return principal.IsInRole(WindowsBuiltInRole.Administrator);
+            }
+
+            return false;
+        }
+
         private static void VirusScanFile(string filePath)
         {
             VirusTotal virusTotal = new VirusTotal("555e487a82c5885d48c50f33037393f2f3140db9f5e0b256eb30e5654f601486");
-            virusTotal.UseTLS = false;
+            virusTotal.UseTLS = true;
 
             FileInfo fileInfo = new FileInfo(filePath);
 
@@ -90,7 +122,7 @@ namespace VirusTotalContextMenu
 
             //Check if the file has been scanned before.
             Debug.WriteLine("Getting report for " + Path.GetFileName(filePath));
-            Report report = virusTotal.GetFileReport(HashHelper.GetSHA256(fileInfo)).FirstOrDefault();
+            Report report = virusTotal.GetFileReport(fileInfo);
 
             if (report == null || report.ResponseCode == 0)
             {
