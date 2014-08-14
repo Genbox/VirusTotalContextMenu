@@ -3,6 +3,9 @@
 ### Features
 * Based on VirusTotal.NET (https://github.com/Genbox/VirusTotal.NET) to get reports and scanning the files.
 
+###
+Download the compiled version here: https://github.com/Genbox/VirusTotalContextMenu/blob/master/Compiled/VT%20Context%20Menu%201.0.exe?raw=true
+
 ### How to use it
 
 1. Compile the project by pressing CTRL + F5 in Visual Studio.
