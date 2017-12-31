@@ -3,20 +3,13 @@
 ### Features
 * Based on VirusTotal.NET (https://github.com/Genbox/VirusTotal.NET) to get reports and scanning the files.
 
-### Install
-Download the compiled version here: https://github.com/Genbox/VirusTotalContextMenu/blob/master/Compiled/VT%20Context%20Menu%201.0.exe?raw=true
-
 ### How to use it
 
-1. Compile the project by pressing CTRL + F5 in Visual Studio.
-2. Doubleclick the 'VT Context Menu 1.0.exe' in the build folder
-3. The context menu is now registered. Right click on a file and choose 'VT scan'
-4. Wait for the program to communicate with Virus Total.
-5. If the file was scanned by Virus Total already, you will see the existing results.
-6. If the file is new, it will be uploaded to Virus Total, and you will have to wait for the results.
+1. Change appsettings.json and put in your Virus Total API key.
+2. Compile the project using Virusl Studio 2017 or the .NET Core 2.0 command line tools
+3. Run the resulting application as Administrator to register the right click context menu. Run it again to unregister.
 
 ### Notes
-* Run the application again to unregister the context menu.
-* The application is 100% portable. You can move it where you like. If you move it, make sure to unregister and register again.
+* You can use the "--register" and "--unregister" command line arguments as well
 * Virus Total limits the number of requests to 4 per minute.
 * Virus Total also limits the file size to 32 MB.
