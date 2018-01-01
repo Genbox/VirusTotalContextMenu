@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using VirusTotalNET;
 using VirusTotalNET.Exceptions;
+using VirusTotalNET.ResponseCodes;
 using VirusTotalNET.Results;
 
 namespace VirusTotalContextMenu
@@ -51,13 +52,17 @@ namespace VirusTotalContextMenu
             // register
             if ("--register".Equals(args[0], StringComparison.OrdinalIgnoreCase))
             {
+                RestartBinaryAsAdminIfRequired();
+
                 // full path to self, %L is placeholder for selected file
-                string menuCommand = string.Format("\"{0}\" \"%L\"", Assembly.GetExecutingAssembly().Location);
+                string menuCommand = string.Format("\"{0}\" \"%L\"", Assembly.GetEntryAssembly().Location);
 
                 // register the context menu
                 FileShellExtension.Register(FileType, KeyName, MenuText, menuCommand);
 
                 Console.WriteLine("The '{0}' shell extension was registered.", KeyName);
+                Console.WriteLine("Press a key to continue");
+                Console.ReadKey();
 
                 return true;
             }
@@ -65,10 +70,14 @@ namespace VirusTotalContextMenu
             // unregister
             if ("--unregister".Equals(args[0], StringComparison.OrdinalIgnoreCase))
             {
+                RestartBinaryAsAdminIfRequired();
+
                 // unregister the context menu
                 FileShellExtension.Unregister(FileType, KeyName);
 
                 Console.WriteLine("The '{0}' shell extension was unregistered.", KeyName);
+                Console.WriteLine("Press a key to continue");
+                Console.ReadKey();
 
                 return true;
             }
@@ -76,6 +85,34 @@ namespace VirusTotalContextMenu
             // command line did not contain an action
             return false;
         }
+
+        private static void RestartBinaryAsAdminIfRequired()
+        {
+            if (UacHelper.IsProcessElevated)
+                return;
+
+            Console.WriteLine("You have to run as admin to register or unregister the context menu.");
+            Console.WriteLine("Press a key to continue");
+            Console.ReadKey();
+            Environment.Exit(0);
+        }
+
+        /// <summary>
+        /// We use this instead of a manifest to only elevate the user to admin when needed.
+        /// </summary>
+        //private static void RestartBinaryAsAdminIfRequired(string[] args)
+        //{
+        //    if (!UacHelper.IsProcessElevated)
+        //    {
+        //        Process p = new Process();
+        //        p.StartInfo.FileName = Assembly.GetEntryAssembly().Location;
+        //        p.StartInfo.Arguments = string.Join(" ", args);
+        //        p.StartInfo.Verb = "runAs";
+        //        p.Start();
+
+        //        Environment.Exit(0);
+        //    }
+        //}
 
         private static async Task VirusScanFile(string filePath)
         {
@@ -88,18 +125,18 @@ namespace VirusTotalContextMenu
                 return;
 
             //Check if the file has been scanned before.
-            Debug.WriteLine("Getting report for " + Path.GetFileName(filePath));
+            Console.WriteLine("Getting report for " + Path.GetFileName(filePath));
             FileReport report = await virusTotal.GetFileReportAsync(fileInfo);
 
-            if (report == null || report.ResponseCode == 0)
+            if (report == null || report.ResponseCode != FileReportResponseCode.Present)
             {
-                Debug.WriteLine("No report for " + Path.GetFileName(filePath) + " - sending file to VT");
+                Console.WriteLine("No report for " + Path.GetFileName(filePath) + " - sending file to VT");
 
                 try
                 {
                     ScanResult result = await virusTotal.ScanFileAsync(fileInfo);
 
-                    Debug.WriteLine("Opening report for " + Path.GetFileName(filePath));
+                    Console.WriteLine("Opening report for " + Path.GetFileName(filePath));
                     Process.Start(result.Permalink);
                 }
                 catch (RateLimitException)
@@ -113,7 +150,7 @@ namespace VirusTotalContextMenu
             }
             else
             {
-                Debug.WriteLine("Opening report for " + Path.GetFileName(filePath));
+                Console.WriteLine("Opening report for " + Path.GetFileName(filePath));
                 Process.Start(report.Permalink);
             }
         }
