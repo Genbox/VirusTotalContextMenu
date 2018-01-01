@@ -14,13 +14,13 @@ namespace VirusTotalContextMenu
     public static class Program
     {
         // file type to register
-        const string FileType = "*";
+        private const string FileType = "*";
 
         // context menu name in the registry
-        const string KeyName = "VirusTotal Context Menu";
+        private const string KeyName = "VirusTotalContextMenu";
 
         // context menu text
-        const string MenuText = "VT Scan";
+        private const string MenuText = "VT Scan";
 
         static async Task Main(string[] args)
         {
@@ -55,7 +55,7 @@ namespace VirusTotalContextMenu
                 RestartBinaryAsAdminIfRequired();
 
                 // full path to self, %L is placeholder for selected file
-                string menuCommand = string.Format("\"{0}\" \"%L\"", Assembly.GetEntryAssembly().Location);
+                string menuCommand = string.Format("\"{0}\" \"%L\"", Path.ChangeExtension(Assembly.GetEntryAssembly().Location, "exe"));
 
                 // register the context menu
                 FileShellExtension.Register(FileType, KeyName, MenuText, menuCommand);
@@ -136,8 +136,8 @@ namespace VirusTotalContextMenu
                 {
                     ScanResult result = await virusTotal.ScanFileAsync(fileInfo);
 
-                    Console.WriteLine("Opening report for " + Path.GetFileName(filePath));
-                    Process.Start(result.Permalink);
+                    Console.WriteLine("Opening " + result.Permalink);
+                    Process.Start(new ProcessStartInfo("cmd", $"/c start {result.Permalink}"));
                 }
                 catch (RateLimitException)
                 {
@@ -150,8 +150,8 @@ namespace VirusTotalContextMenu
             }
             else
             {
-                Console.WriteLine("Opening report for " + Path.GetFileName(filePath));
-                Process.Start(report.Permalink);
+                Console.WriteLine("Opening " + report.Permalink);
+                Process.Start(new ProcessStartInfo("cmd", $"/c start {report.Permalink}"));
             }
         }
     }
