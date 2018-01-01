@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using VirusTotalNET;
@@ -23,7 +24,6 @@ namespace VirusTotalContextMenu
         static async Task Main(string[] args)
         {
             var builder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json");
 
             Configuration = builder.Build();
@@ -52,7 +52,7 @@ namespace VirusTotalContextMenu
             if ("--register".Equals(args[0], StringComparison.OrdinalIgnoreCase))
             {
                 // full path to self, %L is placeholder for selected file
-                string menuCommand = string.Format("\"{0}\" \"%L\"", Directory.GetCurrentDirectory());
+                string menuCommand = string.Format("\"{0}\" \"%L\"", Assembly.GetExecutingAssembly().Location);
 
                 // register the context menu
                 FileShellExtension.Register(FileType, KeyName, MenuText, menuCommand);
