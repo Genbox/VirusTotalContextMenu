@@ -86,6 +86,12 @@ namespace VirusTotalContextMenu
             return false;
         }
 
+        private static void OpenUrl(string url)
+        {
+            url = url.Replace("&", "^&");
+            Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+        }
+
         private static void RestartBinaryAsAdminIfRequired()
         {
             if (UacHelper.IsProcessElevated)
@@ -137,7 +143,7 @@ namespace VirusTotalContextMenu
                     ScanResult result = await virusTotal.ScanFileAsync(fileInfo);
 
                     Console.WriteLine("Opening " + result.Permalink);
-                    Process.Start(new ProcessStartInfo("cmd", $"/c start {result.Permalink}"));
+                    OpenUrl(result.Permalink);
                 }
                 catch (RateLimitException)
                 {
@@ -151,7 +157,7 @@ namespace VirusTotalContextMenu
             else
             {
                 Console.WriteLine("Opening " + report.Permalink);
-                Process.Start(new ProcessStartInfo("cmd", $"/c start {report.Permalink}"));
+                OpenUrl(report.Permalink);
             }
         }
     }
