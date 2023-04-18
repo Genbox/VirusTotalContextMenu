@@ -30,8 +30,7 @@ public static class Program
             }
             catch (Exception e)
             {
-                Console.WriteLine("An error happened:");
-                Console.WriteLine(e);
+                WriteError("Unknown error happened: " + e.Message);
             }
         }
     }
@@ -58,10 +57,7 @@ public static class Program
             // register the context menu
             FileShellExtension.Register(FileType, KeyName, MenuText, menuCommand);
 
-            Console.WriteLine("The '{0}' shell extension was registered.", KeyName);
-            Console.WriteLine("Press a key to continue");
-            Console.ReadKey();
-
+            WriteSuccess($"The '{KeyName}' shell extension was registered.");
             return true;
         }
 
@@ -73,10 +69,7 @@ public static class Program
             // unregister the context menu
             FileShellExtension.Unregister(FileType, KeyName);
 
-            Console.WriteLine("The '{0}' shell extension was unregistered.", KeyName);
-            Console.WriteLine("Press a key to continue");
-            Console.ReadKey();
-
+            WriteSuccess($"The '{KeyName}' shell extension was unregistered.");
             return true;
         }
 
@@ -95,10 +88,22 @@ public static class Program
         if (UacHelper.IsProcessElevated)
             return;
 
-        Console.WriteLine("You have to run as admin to register or unregister the context menu.");
+        WriteError("You have to run as admin to register or unregister the context menu.");
+        Environment.Exit(1);
+    }
+
+    private static void WriteError(string error)
+    {
+        Console.Error.WriteLine(error);
+        Console.Error.WriteLine("Press a key to continue");
+        Console.ReadKey();
+    }
+
+    private static void WriteSuccess(string message)
+    {
+        Console.WriteLine(message);
         Console.WriteLine("Press a key to continue");
         Console.ReadKey();
-        Environment.Exit(0);
     }
 
     /// <summary>
@@ -117,17 +122,18 @@ public static class Program
     //        Environment.Exit(0);
     //    }
     //}
-
     private static async Task VirusScanFile(string filePath)
     {
-        JObject jObj = JObject.Parse(await File.ReadAllTextAsync("appsettings.json"));
+        string path = Path.Combine(Path.GetDirectoryName(Environment.ProcessPath)!, "appsettings.json");
+
+        Console.WriteLine(path);
+
+        JObject jObj = JObject.Parse(await File.ReadAllTextAsync(path));
         string? key = jObj.GetValue("apikey")?.ToString();
 
         if (string.IsNullOrWhiteSpace(key) || key.Length != 64)
         {
-            Console.WriteLine("Invalid API key. Did you remember to change appsettings.json?");
-            Console.WriteLine("Press a key to continue");
-            Console.ReadKey();
+            WriteError("Invalid API key. Did you remember to change appsettings.json?");
             return;
         }
 
@@ -167,8 +173,15 @@ public static class Program
         }
         else
         {
-            Console.WriteLine($"Opening {report.Permalink}");
-            OpenUrl(report.Permalink);
+            if (string.IsNullOrEmpty(report.Permalink))
+            {
+                WriteError("No permalink associated with the file. Cannot open URL.");
+            }
+            else
+            {
+                Console.WriteLine($"Opening {report.Permalink}");
+                OpenUrl(report.Permalink);
+            }
         }
     }
 }

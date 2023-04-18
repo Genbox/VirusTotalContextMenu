@@ -36,13 +36,13 @@ static class FileShellExtension
         // add context menu to the registry
         using (RegistryKey key = Registry.ClassesRoot.CreateSubKey(regPath))
         {
-            key?.SetValue(null, menuText);
+            key.SetValue(null, menuText);
         }
 
         // add command that is invoked to the registry
-        using (RegistryKey key = Registry.ClassesRoot.CreateSubKey(string.Format(@"{0}\command", regPath)))
+        using (RegistryKey key = Registry.ClassesRoot.CreateSubKey($@"{regPath}\command"))
         {
-            key?.SetValue(null, menuCommand);
+            key.SetValue(null, menuCommand);
         }
     }
 
