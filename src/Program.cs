@@ -1,3 +1,8 @@
+// Using VS2022 developer command prompt, navigate to the project folder
+// Build with: dotnet build -c Release
+// Collapse into a single binary with: dotnet publish -r win-x64
+// Outputs to .\VirusTotalContextMenu\src\bin\Release\net9.0-windows10.0.26100.0\win-x64
+
 using System.Diagnostics;
 using Newtonsoft.Json.Linq;
 using VirusTotalNet;
@@ -16,10 +21,13 @@ public static class Program
     private const string KeyName = "VirusTotalContextMenu";
 
     // context menu text
-    private const string MenuText = "VT Scan";
+    private const string MenuText = "VirusTotal Scan";
 
     public static async Task Main(string[] args)
     {
+        Application.EnableVisualStyles();
+        Application.SetCompatibleTextRenderingDefault(false);
+
         // process register or unregister commands
         if (!ProcessCommand(args))
         {
@@ -42,20 +50,37 @@ public static class Program
     /// <returns>True if processed an action in the command line.</returns>
     private static bool ProcessCommand(string[] args)
     {
+        // if no arguments, register or unregister the shell extension
         if (args.Length == 0)
-            args = FileShellExtension.IsRegistered(FileType, KeyName) ? new[] { "--unregister" } : new[] { "--register" };
+            if (FileShellExtension.IsRegistered(FileType, KeyName))
+            {
+                if (DialogResult.Yes == MessageBox.Show("VirusTotal Context Menu is currently registered.\nUnregister it?", "VirusTotal Context Menu Registration", MessageBoxButtons.YesNo, MessageBoxIcon.Question))
+                    args = new[] { "--unregister" };
+            }
+            else
+            {
+                if (DialogResult.Yes == MessageBox.Show("VirusTotal Context Menu is currently not registered.\nRegister it?", "VirusTotal Context Menu Registration", MessageBoxButtons.YesNo, MessageBoxIcon.Question))
+                    args = new[] { "--register" };
+            }
+        // original code had a toggle; replacing with explicit UI prompt
+        //args = FileShellExtension.IsRegistered(FileType, KeyName) ? new[] { "--unregister" } : new[] { "--register" };
 
         // register
         if (string.Equals(args[0], "--register", StringComparison.OrdinalIgnoreCase))
         {
-            RestartBinaryAsAdminIfRequired();
 
             // full path to self, %L is placeholder for selected file
             string? path = Environment.ProcessPath;
+            if (null == path)
+            {
+                WriteError("Could not get the path to the executable.");
+                return false;
+            }
             string menuCommand = $"\"{path}\" \"%L\"";
+            string iconPath = path; // Use the same path as the executable for the icon
 
             // register the context menu
-            FileShellExtension.Register(FileType, KeyName, MenuText, menuCommand);
+            FileShellExtension.Register(FileType, KeyName, MenuText, menuCommand, iconPath);
 
             WriteSuccess($"The '{KeyName}' shell extension was registered.");
             return true;
@@ -64,8 +89,6 @@ public static class Program
         // unregister
         if (string.Equals(args[0], "--unregister", StringComparison.OrdinalIgnoreCase))
         {
-            RestartBinaryAsAdminIfRequired();
-
             // unregister the context menu
             FileShellExtension.Unregister(FileType, KeyName);
 
@@ -77,56 +100,31 @@ public static class Program
         return false;
     }
 
-    private static void OpenUrl(string url)
+    private static void OpenUrl(string url, string prompt)
     {
+        if (DialogResult.No == MessageBox.Show(prompt, "Open in Browser?", MessageBoxButtons.YesNo, MessageBoxIcon.Question))
+        {
+            return;
+        }
         url = url.Replace("&", "^&");
         using Process? p = Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
     }
 
-    private static void RestartBinaryAsAdminIfRequired()
-    {
-        if (UacHelper.IsProcessElevated)
-            return;
-
-        WriteError("You have to run as admin to register or unregister the context menu.");
-        Environment.Exit(1);
-    }
-
     private static void WriteError(string error)
     {
-        Console.Error.WriteLine(error);
-        Console.Error.WriteLine("Press a key to continue");
-        Console.ReadKey();
+        MessageBox.Show(error, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
     }
 
     private static void WriteSuccess(string message)
     {
-        Console.WriteLine(message);
-        Console.WriteLine("Press a key to continue");
-        Console.ReadKey();
+        MessageBox.Show(message, "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
     }
 
-    /// <summary>
-    /// We use this instead of a manifest to only elevate the user to admin when needed.
-    /// </summary>
-    //private static void RestartBinaryAsAdminIfRequired(string[] args)
-    //{
-    //    if (!UacHelper.IsProcessElevated)
-    //    {
-    //        Process p = new Process();
-    //        p.StartInfo.FileName = Assembly.GetEntryAssembly().Location;
-    //        p.StartInfo.Arguments = string.Join(" ", args);
-    //        p.StartInfo.Verb = "runAs";
-    //        p.Start();
-
-    //        Environment.Exit(0);
-    //    }
-    //}
     private static async Task VirusScanFile(string filePath)
     {
         string path = Path.Combine(Path.GetDirectoryName(Environment.ProcessPath)!, "appsettings.json");
 
-        Console.WriteLine(path);
+        //Console.WriteLine(path);
 
         JObject jObj = JObject.Parse(await File.ReadAllTextAsync(path));
         string? key = jObj.GetValue("apikey")?.ToString();
@@ -136,6 +134,8 @@ public static class Program
             WriteError("Invalid API key. Did you remember to change appsettings.json?");
             return;
         }
+
+        Console.WriteLine("Scanning file: " + filePath + "...");
 
         using VirusTotal virusTotal = new VirusTotal(key);
         virusTotal.UseTLS = true;
@@ -148,27 +148,35 @@ public static class Program
         //Check if the file has been scanned before.
         string fileName = Path.GetFileName(filePath);
 
-        Console.WriteLine($"Getting report for {fileName}");
         FileReport report = await virusTotal.GetFileReportAsync(info);
 
         if (report == null || report.ResponseCode != FileReportResponseCode.Present)
         {
-            Console.WriteLine($"No report for {fileName} - sending file to VT");
+            Console.Write($"No report for {fileName} - sending file to VT...");
 
             try
             {
                 ScanResult result = await virusTotal.ScanFileAsync(info);
 
-                Console.WriteLine($"Opening {result.Permalink}");
-                OpenUrl(result.Permalink);
+                if (result.Permalink.Length < 66)
+                {
+                    WriteError("Invalid scan ID received from VirusTotal: " + result.Permalink);
+                    return;
+                }
+                string sha256 = result.Permalink.Substring(2, 64);
+                OpenUrl("https://www.virustotal.com/gui/file/" + sha256 + "/detection/" + result.Permalink, "File new to VirusTotal. Open in browser?");
             }
             catch (RateLimitException)
             {
-                Console.WriteLine("Virus Total limits the number of calls you can make to 4 calls each 60 seconds.");
+                MessageBox.Show("Virus Total limits the number of calls you can make to 4 calls each 60 seconds.", "Rate Exceeded", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (SizeLimitException)
             {
-                Console.WriteLine("Virus Total limits the filesize to 32 MB.");
+                MessageBox.Show("Virus Total limits the filesize to 32 MB.", "Size Limitation", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception e)
+            {
+                WriteError("Unknown error happened: " + e.Message);
             }
         }
         else
@@ -179,8 +187,7 @@ public static class Program
             }
             else
             {
-                Console.WriteLine($"Opening {report.Permalink}");
-                OpenUrl(report.Permalink);
+                OpenUrl(report.Permalink, "Results: " + report.Positives + "/" + report.Total + " positive hits.\nLast scanned: " + report.ScanDate.ToString("dd MMM yyyy") + " (" + (DateTime.Now - report.ScanDate).Days + " days ago).\nOpen in browser?");
             }
         }
     }
