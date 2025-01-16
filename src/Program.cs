@@ -56,11 +56,15 @@ public static class Program
             {
                 if (DialogResult.Yes == MessageBox.Show("VirusTotal Context Menu is currently registered.\nUnregister it?", "VirusTotal Context Menu Registration", MessageBoxButtons.YesNo, MessageBoxIcon.Question))
                     args = new[] { "--unregister" };
+                else
+                    return true;
             }
             else
             {
                 if (DialogResult.Yes == MessageBox.Show("VirusTotal Context Menu is currently not registered.\nRegister it?", "VirusTotal Context Menu Registration", MessageBoxButtons.YesNo, MessageBoxIcon.Question))
                     args = new[] { "--register" };
+                else 
+                    return true;
             }
         // original code had a toggle; replacing with explicit UI prompt
         //args = FileShellExtension.IsRegistered(FileType, KeyName) ? new[] { "--unregister" } : new[] { "--register" };
