@@ -13,9 +13,9 @@ static class FileShellExtension
 {
     public static bool IsRegistered(string fileType, string shellKeyName)
     {
-        string regPath = $@"{fileType}\shell\{shellKeyName}";
+        string regPath = $@"Software\Classes\{fileType}\shell\{shellKeyName}";
 
-        using RegistryKey? key = Registry.ClassesRoot.OpenSubKey(regPath);
+        using RegistryKey? key = Registry.CurrentUser.OpenSubKey(regPath);
         return key != null;
     }
 
@@ -26,21 +26,22 @@ static class FileShellExtension
     /// <param name="shellKeyName">Name that appears in the registry.</param>
     /// <param name="menuText">Text that appears in the context menu.</param>
     /// <param name="menuCommand">Command line that is executed.</param>
-    public static void Register(string fileType, string shellKeyName, string menuText, string menuCommand)
+    public static void Register(string fileType, string shellKeyName, string menuText, string menuCommand, string iconPath)
     {
         Debug.Assert(!string.IsNullOrEmpty(fileType) && !string.IsNullOrEmpty(shellKeyName) && !string.IsNullOrEmpty(menuText) && !string.IsNullOrEmpty(menuCommand));
 
         // create full path to registry location
-        string regPath = $@"{fileType}\shell\{shellKeyName}";
+        string regPath = $@"Software\Classes\{fileType}\shell\{shellKeyName}";
 
         // add context menu to the registry
-        using (RegistryKey key = Registry.ClassesRoot.CreateSubKey(regPath))
+        using (RegistryKey key = Registry.CurrentUser.CreateSubKey(regPath))
         {
             key.SetValue(null, menuText);
+            key.SetValue("Icon", iconPath);
         }
 
         // add command that is invoked to the registry
-        using (RegistryKey key = Registry.ClassesRoot.CreateSubKey($@"{regPath}\command"))
+        using (RegistryKey key = Registry.CurrentUser.CreateSubKey($@"{regPath}\command"))
         {
             key.SetValue(null, menuCommand);
         }
@@ -56,9 +57,9 @@ static class FileShellExtension
         Debug.Assert(!string.IsNullOrEmpty(fileType) && !string.IsNullOrEmpty(shellKeyName));
 
         // full path to the registry location
-        string regPath = $@"{fileType}\shell\{shellKeyName}";
+        string regPath = $@"Software\Classes\{fileType}\shell\{shellKeyName}";
 
         // remove context menu from the registry
-        Registry.ClassesRoot.DeleteSubKeyTree(regPath, false);
+        Registry.CurrentUser.DeleteSubKeyTree(regPath, false);
     }
 }
