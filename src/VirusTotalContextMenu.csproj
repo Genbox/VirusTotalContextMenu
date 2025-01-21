@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<OutputType>Exe</OutputType>
+		<OutputType>WinExe</OutputType>
 		<UseWindowsForms>true</UseWindowsForms>
-		<TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
+		<TargetFramework>net9.0-windows</TargetFramework>
 		<AssemblyVersion>1.9.0.0</AssemblyVersion>
 		<FileVersion>1.9.0.0</FileVersion>
 	</PropertyGroup>
