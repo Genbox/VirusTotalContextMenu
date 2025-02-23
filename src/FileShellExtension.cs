@@ -15,6 +15,8 @@ internal static class FileShellExtension
 
     internal static void Register(string fileType, string shellKeyName, string menuText, string menuCommand, string iconPath)
     {
+Debug.Assert(!string.IsNullOrEmpty(fileType) && !string.IsNullOrEmpty(shellKeyName) && !string.IsNullOrEmpty(menuText) && !string.IsNullOrEmpty(menuCommand));
+
         Debug.Assert(!string.IsNullOrEmpty(fileType) && !string.IsNullOrEmpty(shellKeyName) && !string.IsNullOrEmpty(menuText) && !string.IsNullOrEmpty(menuCommand));
 
         // create full path to registry location
@@ -32,7 +34,8 @@ internal static class FileShellExtension
             key.SetValue(null, menuCommand);
     }
 
-    internal static void Unregister(string fileType, string shellKeyName)
+    internal static void Unregister(string fileType, string shellKeyName)Debug.Assert(!string.IsNullOrEmpty(fileType) && !string.IsNullOrEmpty(shellKeyName));
+
     {
         Debug.Assert(!string.IsNullOrEmpty(fileType) && !string.IsNullOrEmpty(shellKeyName));
         Registry.CurrentUser.DeleteSubKeyTree($@"Software\Classes\{fileType}\shell\{shellKeyName}", false);
